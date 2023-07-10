@@ -1,6 +1,6 @@
 use std::sync::mpsc;
 use std::{thread, io};
-use std::time::Duration;
+use std::time::{Duration, Instant};
 use std::{error::Error, io::stdout};
 use crossterm::event::{Event, KeyCode};
 use crossterm::terminal::{self, EnterAlternateScreen, LeaveAlternateScreen};
@@ -37,8 +37,11 @@ fn main() -> Result <(), Box<dyn Error>> {
 
     //gameloop
     let mut player = Player::new();
+    let mut instant = Instant::now();
     'gameloop: loop {
         //per-frame init
+        let delta = instant.elapsed();
+        instant = Instant::now();
         let mut curr_frame = new_frame();
         //input
         while event::poll(Duration::default())?{
@@ -46,11 +49,15 @@ fn main() -> Result <(), Box<dyn Error>> {
                 match key_event.code {
                     KeyCode::Left => player.move_left(),
                     KeyCode::Right => player.move_right(),
+                    KeyCode::Char(' ') => if player.shoot() {}
                     KeyCode::Esc | KeyCode::Char('q') => break 'gameloop,
                     _ => {}
                 }
             }
         }
+
+        //update
+        player.update(delta);
 
         //draw & render
         player.draw(&mut curr_frame);
