@@ -60,6 +60,7 @@ fn main() -> Result <(), Box<dyn Error>> {
         //update
         player.update(delta);
         let _ = invaders.update(delta);
+        let _ = player.detect_hits(&mut invaders);
 
         //draw & render
         player.draw(&mut curr_frame);
@@ -70,6 +71,16 @@ fn main() -> Result <(), Box<dyn Error>> {
         }
         let _ = render_tx.send(curr_frame);
         thread::sleep(Duration::from_millis(1));
+
+        //win or lose
+        if invaders.all_killed(){
+            println!("win");
+            break 'gameloop;
+        }
+        if invaders.reached_bottom() {
+            println!("lose");
+            break 'gameloop;
+        }
 
     }
 
